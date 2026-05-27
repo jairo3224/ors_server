@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Block direct access to sensitive files
+RewriteRule ^(config|middleware|models|controllers|helpers|storage|composer\.(json|lock)|\.env)($|/) - [F,L]
+
+# Route everything else to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]

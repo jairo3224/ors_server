@@ -1,0 +1,15 @@
+{
+  "name": "incident-tracker/backend",
+  "description": "Student Incident and Referral Tracking System API",
+  "type": "project",
+  "require": {
+    "php": ">=8.1",
+    "firebase/php-jwt": "^7.0",
+    "vlucas/phpdotenv": "^5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}
