@@ -1,6 +1,10 @@
 # Ignore local environment files
 .env
 
+# Ignore dependency directories and local tools
+/vendor/
+composer.phar
+
 # Ignore local editor files
 .vscode/
 .idea/
