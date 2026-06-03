@@ -5,6 +5,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../controllers/AuthController.php';
+require_once __DIR__ . '/../controllers/IncidentController.php';
+require_once __DIR__ . '/../controllers/StudentController.php';
+require_once __DIR__ . '/../controllers/ClassController.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../helpers/Response.php';
 
@@ -30,6 +33,9 @@ $path = rtrim($path, '/');
 $path = preg_replace('#^/api#', '', $path);
 
 $auth = new AuthController();
+$incidentController = new IncidentController();
+$studentController = new StudentController();
+$classController = new ClassController();
 
 // ─────────────────────────────────────────────────
 // AUTH ROUTES  (public — no token required)
@@ -43,20 +49,38 @@ if ($path === '/auth/refresh' && $method === 'POST') { $auth->refresh(); }
 // ─────────────────────────────────────────────────
 if ($path === '/auth/me' && $method === 'GET') { $auth->me(); }
 
-// ── Role-specific route examples ─────────────────
-// Uncomment and expand as you build each feature.
+// ─────────────────────────────────────────────────
+// INCIDENT ROUTES  (token + role required)
+// ─────────────────────────────────────────────────
+if ($path === '/teacher/incidents' && $method === 'GET') {
+    $incidentController->index();
+}
 
-// if ($path === '/incidents' && $method === 'GET') {
-//     AuthMiddleware::handle();
-//     AuthMiddleware::requireRoles(['OSAS', 'Guidance Office', 'Department Head', 'Teacher', 'Chaplain']);
-//     // $incidentController->index();
-// }
+if ($path === '/teacher/incidents' && $method === 'POST') {
+    $incidentController->store();
+}
 
-// if ($path === '/incidents' && $method === 'POST') {
-//     AuthMiddleware::handle();
-//     AuthMiddleware::requireRoles(['Teacher', 'Department Head']);
-//     // $incidentController->store();
-// }
+if ($path === '/teacher/incidents/refer' && $method === 'POST') {
+    $incidentController->refer();
+}
+
+// ─────────────────────────────────────────────────
+// STUDENT ROUTES  (token + role required)
+// ─────────────────────────────────────────────────
+if ($path === '/teacher/students/search' && $method === 'GET') {
+    $studentController->search();
+}
+
+// ─────────────────────────────────────────────────
+// CLASS ROUTES  (token + role required)
+// ─────────────────────────────────────────────────
+if ($path === '/teacher/classes' && $method === 'GET') {
+    $classController->index();
+}
+
+if ($method === 'GET' && preg_match('#^/teacher/classes/(\d+)/roster$#', $path, $matches)) {
+    $classController->roster((int) $matches[1]);
+}
 
 // ─────────────────────────────────────────────────
 // 404 fallback
