@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 declare(strict_types=1);
 
@@ -368,4 +368,3 @@ class IncidentModel
         return (int) $row['id'];
     }
 }
-

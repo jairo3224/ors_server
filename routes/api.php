@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 // routes/api.php
 
@@ -34,6 +34,7 @@ $path = rtrim($path, '/');
 $path = preg_replace('#^/api#', '', $path);
 
 $auth = new AuthController();
+$chairpersonController = new ChairpersonController();
 $incidentController = new IncidentController();
 $studentController = new StudentController();
 $classController = new ClassController();
@@ -53,8 +54,6 @@ if ($path === '/auth/me' && $method === 'GET') { $auth->me(); }
 // ─────────────────────────────────────────────────
 // CHAIRPERSON ROUTES (Department Head only)
 // ─────────────────────────────────────────────────
-$chairpersonController = new ChairpersonController();
-
 if ($path === '/chairperson/students' && $method === 'GET') {
     $chairpersonController->students();
 }
