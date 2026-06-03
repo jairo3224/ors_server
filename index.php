@@ -1,7 +1,4 @@
 <?php
-
-// index.php — single entry point for all API requests
-
 declare(strict_types=1);
 
 use Dotenv\Dotenv;
