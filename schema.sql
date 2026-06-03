@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 27, 2026 at 04:37 AM
+-- Generation Time: Jun 03, 2026 at 03:44 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -112,6 +112,7 @@ CREATE TABLE `incident_reports` (
   `assigned_to` int(11) DEFAULT NULL,
   `subject_id` int(11) DEFAULT NULL,
   `incident_type_id` int(11) DEFAULT NULL,
+  `incident_type` varchar(255) DEFAULT NULL,
   `description` text NOT NULL,
   `urgency_level` enum('low','medium','high','critical') DEFAULT 'medium',
   `current_status` enum('reported','under_review','referred','in_progress','resolved','closed') DEFAULT 'reported',
@@ -120,6 +121,22 @@ CREATE TABLE `incident_reports` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `incident_reports`
+--
+
+INSERT INTO `incident_reports` (`id`, `report_code`, `student_id`, `reported_by`, `assigned_to`, `subject_id`, `incident_type_id`, `incident_type`, `description`, `urgency_level`, `current_status`, `resolved_at`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 'INC-1780386845-8F2C15', 1, 8, NULL, NULL, 5, NULL, 'sfssfsfs sfssfsAFSEfSFSFSF  sgssEsefsfsf', 'low', 'reported', NULL, NULL, '2026-06-02 07:54:05', '2026-06-02 07:54:05'),
+(2, 'INC-1780392778-50DDB4', 16, 8, 1, NULL, 5, NULL, 'fsfffsefFGgGGGGEDhbzh hrsthrshrhr  hgeheahaehaeh', 'low', 'referred', NULL, NULL, '2026-06-02 09:32:58', '2026-06-02 09:55:36'),
+(3, 'INC-1780394173-FAB036', 4, 8, NULL, NULL, 5, NULL, 'UYGFAFGFGAF IUAGf ui iguIUdfuaidufaWD', 'low', 'reported', NULL, NULL, '2026-06-02 09:56:13', '2026-06-02 09:56:13'),
+(4, 'INC-1780394204-0A487D', 5, 8, NULL, NULL, 5, NULL, 'gdgzgd eagedg  egea ge ge', 'low', 'reported', NULL, NULL, '2026-06-02 09:56:44', '2026-06-02 09:56:44'),
+(5, 'INC-1780394542-6336EF', 13, 8, NULL, NULL, 5, NULL, 'sfsfs  t wf gg  ggeeeGEE e e we ew', 'low', 'reported', NULL, NULL, '2026-06-02 10:02:22', '2026-06-02 10:02:22'),
+(6, 'INC-1780394852-9B0A16', 14, 8, NULL, NULL, 5, NULL, 'adad aawda asfafaw f af a', 'low', 'reported', NULL, NULL, '2026-06-02 10:07:32', '2026-06-02 10:07:32'),
+(7, 'INC-1780395573-3963A1', 9, 8, 1, NULL, 5, NULL, 'awfaa wrfrf w ffsafS', 'low', 'referred', NULL, NULL, '2026-06-02 10:19:33', '2026-06-02 10:19:56'),
+(8, 'INC-1780396264-896759', 8, 8, NULL, NULL, 5, NULL, 'iuiuygui huyiguigiug u yg iugi uyg', 'high', 'reported', NULL, NULL, '2026-06-02 10:31:04', '2026-06-02 10:31:04'),
+(9, 'INC-1780449383-871213', 12, 8, 1, NULL, 5, NULL, 'doing something unhuman things!!!!', 'critical', 'referred', NULL, NULL, '2026-06-03 01:16:23', '2026-06-03 01:31:20'),
+(10, 'INC-1780450290-AEF248', 6, 8, NULL, NULL, 5, NULL, 'gZDGDGDGGGg', 'low', 'reported', NULL, NULL, '2026-06-03 01:31:30', '2026-06-03 01:31:30');
 
 -- --------------------------------------------------------
 
@@ -181,6 +198,15 @@ CREATE TABLE `referrals` (
   `referred_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `referrals`
+--
+
+INSERT INTO `referrals` (`id`, `incident_id`, `referred_to`, `referred_by`, `remarks`, `status`, `responded_at`, `referred_at`, `updated_at`) VALUES
+(1, 2, 1, 8, 'Detain this student!', 'pending', NULL, '2026-06-02 09:55:36', '2026-06-02 09:55:36'),
+(2, 7, 1, 8, 'arfrfa afafafafaf', 'pending', NULL, '2026-06-02 10:19:56', '2026-06-02 10:19:56'),
+(3, 9, 1, 8, 'gegdzrgdgdg', 'pending', NULL, '2026-06-03 01:31:20', '2026-06-03 01:31:20');
 
 -- --------------------------------------------------------
 
@@ -246,7 +272,8 @@ INSERT INTO `roles` (`id`, `role_name`, `created_at`, `updated_at`) VALUES
 (2, 'Guidance Office', '2026-05-27 00:52:52', '2026-05-27 00:52:52'),
 (3, 'Chaplain', '2026-05-27 00:52:52', '2026-05-27 00:52:52'),
 (4, 'Department Head', '2026-05-27 00:52:52', '2026-05-27 00:52:52'),
-(5, 'Teacher', '2026-05-27 00:52:52', '2026-05-27 00:52:52');
+(5, 'Teacher', '2026-05-27 00:52:52', '2026-05-27 00:52:52'),
+(6, 'Admin', '2026-05-28 08:20:03', '2026-05-28 08:20:03');
 
 -- --------------------------------------------------------
 
@@ -264,24 +291,11 @@ CREATE TABLE `school_years` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Triggers `school_years`
+-- Dumping data for table `school_years`
 --
-DELIMITER $$
-CREATE TRIGGER `trg_single_active_semester` BEFORE INSERT ON `school_years` FOR EACH ROW BEGIN
-    IF NEW.is_active = TRUE THEN
-        UPDATE school_years SET is_active = FALSE WHERE is_active = TRUE;
-    END IF;
-END
-$$
-DELIMITER ;
-DELIMITER $$
-CREATE TRIGGER `trg_single_active_semester_update` BEFORE UPDATE ON `school_years` FOR EACH ROW BEGIN
-    IF NEW.is_active = TRUE AND OLD.is_active = FALSE THEN
-        UPDATE school_years SET is_active = FALSE WHERE is_active = TRUE AND id != NEW.id;
-    END IF;
-END
-$$
-DELIMITER ;
+
+INSERT INTO `school_years` (`id`, `school_year`, `semester`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, '2025-2026', '2nd Semester', 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21');
 
 -- --------------------------------------------------------
 
@@ -298,6 +312,15 @@ CREATE TABLE `sections` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `sections`
+--
+
+INSERT INTO `sections` (`id`, `section_name`, `year_level`, `department_id`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 'BSCS-3A', 3, 1, NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(2, 'BSCS-2B', 2, 1, NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(3, 'BSIT-4A', 4, 1, NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21');
 
 -- --------------------------------------------------------
 
@@ -320,6 +343,28 @@ CREATE TABLE `students` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `students`
+--
+
+INSERT INTO `students` (`id`, `student_number`, `first_name`, `last_name`, `middle_name`, `year_level`, `department_id`, `section_id`, `status`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 'STU-2024-001', 'Juan', 'Dela Cruz', NULL, 3, 1, 1, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(2, 'STU-2024-002', 'Maria', 'Santos', NULL, 3, 1, 1, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(3, 'STU-2024-003', 'Carlos', 'Garcia', NULL, 3, 1, 1, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(4, 'STU-2024-004', 'Anna', 'Lopez', NULL, 3, 1, 1, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(5, 'STU-2024-005', 'Pedro', 'Lim', NULL, 3, 1, 1, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(6, 'STU-2024-006', 'Rosa', 'Garcia', NULL, 3, 1, 1, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(7, 'STU-2024-007', 'Miguel', 'Tan', NULL, 3, 1, 1, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(8, 'STU-2024-008', 'Sofia', 'Reyes', NULL, 2, 1, 2, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(9, 'STU-2024-009', 'Jose', 'Rizal Jr.', NULL, 2, 1, 2, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(10, 'STU-2024-010', 'Liza', 'Fernandez', NULL, 2, 1, 2, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(11, 'STU-2024-011', 'Mark', 'Villanueva', NULL, 2, 1, 2, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(12, 'STU-2024-012', 'Nina', 'Salvador', NULL, 4, 1, 3, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(13, 'STU-2024-013', 'Kevin', 'Cruz', NULL, 4, 1, 3, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(14, 'STU-2024-014', 'Patricia', 'Mendoza', NULL, 4, 1, 3, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(15, 'STU-2024-015', 'Dennis', 'Reyes', NULL, 4, 1, 3, 'active', NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(16, 'STU-2023-020', 'Kris Ian', 'Bandiola', 'B.', 4, 1, 3, 'active', NULL, '2026-06-02 08:11:06', '2026-06-02 08:11:06');
+
 -- --------------------------------------------------------
 
 --
@@ -335,6 +380,31 @@ CREATE TABLE `student_subjects` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `student_subjects`
+--
+
+INSERT INTO `student_subjects` (`id`, `student_id`, `subject_id`, `section_id`, `school_year_id`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(2, 2, 1, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(3, 3, 1, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(4, 4, 1, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(5, 5, 1, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(6, 6, 1, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(7, 7, 1, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(8, 1, 2, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(9, 2, 2, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(10, 6, 2, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(11, 7, 2, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(12, 8, 3, 2, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(13, 9, 3, 2, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(14, 10, 3, 2, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(15, 11, 3, 2, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(16, 12, 4, 3, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(17, 13, 4, 3, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(18, 14, 4, 3, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(19, 15, 4, 3, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21');
 
 -- --------------------------------------------------------
 
@@ -352,6 +422,16 @@ CREATE TABLE `subjects` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `subjects`
+--
+
+INSERT INTO `subjects` (`id`, `subject_code`, `subject_name`, `department_id`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 'CS 101', 'Data Structures', 1, NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(2, 'CS 201', 'Database Management', 1, NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(3, 'CS 301', 'Algorithms', 1, NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(4, 'IT 101', 'Web Development', 1, NULL, '2026-06-01 05:41:21', '2026-06-01 05:41:21');
+
 -- --------------------------------------------------------
 
 --
@@ -367,6 +447,16 @@ CREATE TABLE `teacher_subjects` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `teacher_subjects`
+--
+
+INSERT INTO `teacher_subjects` (`id`, `teacher_id`, `subject_id`, `section_id`, `school_year_id`, `created_at`, `updated_at`) VALUES
+(1, 8, 1, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(2, 8, 2, 1, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(3, 8, 3, 2, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21'),
+(4, 8, 4, 3, 1, '2026-06-01 05:41:21', '2026-06-01 05:41:21');
 
 -- --------------------------------------------------------
 
@@ -400,7 +490,8 @@ INSERT INTO `users` (`id`, `employee_id`, `first_name`, `last_name`, `email`, `p
 (5, 'EMP-2026-046', 'Noah', 'Delgado', 'noah.delgado@school.edu', '$2y$10$t112lx5WqgjgxY2LFb0qBO4jQrZFUJ1S8evAPPMxGj5pRb/i0B.7W', 2, NULL, 1, NULL, '2026-05-27 02:20:18', '2026-05-27 02:20:18'),
 (6, 'EMP-2026-047', 'Peter', 'Cruz', 'peter.cruz@school.edu', '$2y$10$1lFNq2WJn4.lXWCkMdxAV./LLYpeOWmeyzpY0dIDQPfntCFhOSoem', 3, NULL, 1, NULL, '2026-05-27 02:20:18', '2026-05-27 02:20:18'),
 (7, 'EMP-2026-048', 'Elena', 'Cruz', 'elena.cruz@school.edu', '$2y$10$a5oYLOfsV6a8DdqbdP7LCOS2bzJB8XQlbgi78p/sfZzsCBFnPbc7q', 4, 4, 1, NULL, '2026-05-27 02:20:18', '2026-05-27 02:20:18'),
-(8, 'EMP-2026-049', 'Christian', 'Reyes', 'christian.reyes@school.edu', '$2y$10$v3BhuRaLj.a1/1Klxq4boednCzv14ykuG4l/OjzAjAjb1Svt2VxQS', 5, 1, 1, NULL, '2026-05-27 02:20:18', '2026-05-27 02:20:18');
+(8, 'EMP-2026-049', 'Christian', 'Reyes', 'christian.reyes@school.edu', '$2y$10$v3BhuRaLj.a1/1Klxq4boednCzv14ykuG4l/OjzAjAjb1Svt2VxQS', 5, 1, 1, NULL, '2026-05-27 02:20:18', '2026-05-27 02:20:18'),
+(9, 'EMP100', 'Test', 'APIUser', 'test.api@example.com', '$2y$10$h/orAux5F4csNJewONOUIuTi77pzB8gH//wmrHk69oUV4l9CdCgVS', 6, NULL, 1, NULL, '2026-05-28 08:20:03', '2026-05-28 08:20:03');
 
 --
 -- Indexes for dumped tables
@@ -603,7 +694,7 @@ ALTER TABLE `departments`
 -- AUTO_INCREMENT for table `incident_reports`
 --
 ALTER TABLE `incident_reports`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `incident_types`
@@ -621,7 +712,7 @@ ALTER TABLE `notifications`
 -- AUTO_INCREMENT for table `referrals`
 --
 ALTER TABLE `referrals`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `responses`
@@ -639,49 +730,49 @@ ALTER TABLE `response_types`
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `school_years`
 --
 ALTER TABLE `school_years`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `sections`
 --
 ALTER TABLE `sections`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `student_subjects`
 --
 ALTER TABLE `student_subjects`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `subjects`
 --
 ALTER TABLE `subjects`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `teacher_subjects`
 --
 ALTER TABLE `teacher_subjects`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Constraints for dumped tables

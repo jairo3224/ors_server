@@ -80,4 +80,34 @@ class UserModel
         $user = $stmt->fetch();
         return $user ?: null;
     }
+
+    public function findByRoleName(string $roleName): ?array
+    {
+        $sql = "
+            SELECT
+                u.id,
+                u.employee_id,
+                u.first_name,
+                u.last_name,
+                u.email,
+                u.is_active,
+                u.role_id,
+                r.role_name,
+                u.department_id,
+                d.department_name
+            FROM users u
+            INNER JOIN roles r ON r.id = u.role_id
+            LEFT  JOIN departments d ON d.id = u.department_id
+            WHERE r.role_name = :role_name
+              AND u.deleted_at IS NULL
+              AND u.is_active = 1
+            LIMIT 1
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':role_name' => $roleName]);
+
+        $user = $stmt->fetch();
+        return $user ?: null;
+    }
 }
