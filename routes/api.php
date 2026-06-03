@@ -5,6 +5,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../controllers/AuthController.php';
+require_once __DIR__ . '/../controllers/ChairpersonController.php';
 require_once __DIR__ . '/../middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../helpers/Response.php';
 
@@ -43,20 +44,50 @@ if ($path === '/auth/refresh' && $method === 'POST') { $auth->refresh(); }
 // ─────────────────────────────────────────────────
 if ($path === '/auth/me' && $method === 'GET') { $auth->me(); }
 
-// ── Role-specific route examples ─────────────────
-// Uncomment and expand as you build each feature.
+// ─────────────────────────────────────────────────
+// CHAIRPERSON ROUTES (Department Head only)
+// ─────────────────────────────────────────────────
+$controller = new ChairpersonController();
 
-// if ($path === '/incidents' && $method === 'GET') {
-//     AuthMiddleware::handle();
-//     AuthMiddleware::requireRoles(['OSAS', 'Guidance Office', 'Department Head', 'Teacher', 'Chaplain']);
-//     // $incidentController->index();
-// }
+if ($path === '/chairperson/students' && $method === 'GET') {
+    $controller->students();
+}
+if ($path === '/chairperson/reports' && $method === 'GET') {
+    $controller->reports();
+}
+if ($path === '/chairperson/cases' && $method === 'GET') {
+    $controller->cases();
+}
+if ($path === '/chairperson/inbox' && $method === 'GET') {
+    $controller->inbox();
+}
 
-// if ($path === '/incidents' && $method === 'POST') {
-//     AuthMiddleware::handle();
-//     AuthMiddleware::requireRoles(['Teacher', 'Department Head']);
-//     // $incidentController->store();
-// }
+// Dynamic routes with ID
+if (preg_match('#^/chairperson/reports/(\d+)/remark$#', $path, $matches) && $method === 'POST') {
+    $controller->addRemark((int) $matches[1]);
+}
+if (preg_match('#^/chairperson/reports/(\d+)/forward$#', $path, $matches) && $method === 'POST') {
+    $controller->forward((int) $matches[1]);
+}
+if (preg_match('#^/chairperson/inbox/(\d+)/respond$#', $path, $matches) && $method === 'POST') {
+    $controller->respondToReferral((int) $matches[1]);
+}
+
+// ─────────────────────────────────────────────────
+// DEV / DEBUG ROUTES (local only)
+// ─────────────────────────────────────────────────
+if ($path === '/debug/students' && $method === 'GET') {
+    $controller->studentsDebug();
+}
+if ($path === '/debug/reports' && $method === 'GET') {
+    $controller->reportsDebug();
+}
+if ($path === '/debug/cases' && $method === 'GET') {
+    $controller->casesDebug();
+}
+if ($path === '/debug/inbox' && $method === 'GET') {
+    $controller->inboxDebug();
+}
 
 // ─────────────────────────────────────────────────
 // 404 fallback
