@@ -160,7 +160,3 @@ class StudentModel
         return $stmt->fetchAll();
     }
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> fba4a58b14cb0b7092798eb8fc04faeee70283da
