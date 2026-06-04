@@ -13,6 +13,8 @@ class IncidentModel
         $this->db = Database::connect();
     }
 
+    // ── Original chairperson methods (unchanged) ──
+
     public function findByDepartment(int $departmentId): array
     {
         $sql = "
@@ -95,9 +97,32 @@ class IncidentModel
         return $stmt->fetchAll();
     }
 
+    // ── Original addRemark (preserved for team usage) ──
     public function addRemark(int $incidentId, int $userId, string $text): void
     {
         $typeId = $this->getResponseTypeId('remark');
+
+        $sql = "
+            INSERT INTO responses (incident_id, user_id, response_type_id, remarks)
+            VALUES (:incident_id, :user_id, :type_id, :remarks)
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':incident_id' => $incidentId,
+            ':user_id'     => $userId,
+            ':type_id'     => $typeId,
+            ':remarks'     => $text,
+        ]);
+    }
+
+    // ── New addResponse (for chairperson type‑aware responses) ──
+    /**
+     * Add a response of any type (e.g. 'remark', 'assessment', 'recommendation').
+     * Uses the same responses table.
+     */
+    public function addResponse(int $incidentId, int $userId, string $typeName, string $text): void
+    {
+        $typeId = $this->getResponseTypeId($typeName);
 
         $sql = "
             INSERT INTO responses (incident_id, user_id, response_type_id, remarks)
@@ -157,16 +182,10 @@ class IncidentModel
         }
     }
 
+    // ── Team’s new methods (from their task) ──
+
     /**
      * Create a new incident report.
-     * 
-     * @param int $studentId      ID of the student involved
-     * @param int $reportedBy     ID of the teacher reporting
-     * @param int $incidentTypeId ID of the incident type
-     * @param string $description Detailed description of the incident
-     * @param string $urgencyLevel  'low', 'medium', 'high', 'critical'
-     * @param int|null $subjectId Optional subject ID
-     * @return array Created incident with id and report_code
      */
     public function create(
         int $studentId,
@@ -202,14 +221,14 @@ class IncidentModel
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':report_code'     => $reportCode,
-            ':student_id'      => $studentId,
-            ':reported_by'     => $reportedBy,
-            ':subject_id'      => $subjectId,
+            ':report_code'      => $reportCode,
+            ':student_id'       => $studentId,
+            ':reported_by'      => $reportedBy,
+            ':subject_id'       => $subjectId,
             ':incident_type_id' => $incidentTypeId,
-            ':description'     => $description,
-            ':urgency_level'   => $urgencyLevel,
-            ':current_status'  => 'reported',
+            ':description'      => $description,
+            ':urgency_level'    => $urgencyLevel,
+            ':current_status'   => 'reported',
         ]);
 
         $incidentId = (int) $this->db->lastInsertId();
@@ -224,6 +243,9 @@ class IncidentModel
         ];
     }
 
+    /**
+     * Create a referral and update incident status.
+     */
     public function createReferral(int $incidentId, int $referredBy, int $referredTo, string $remarks): void
     {
         $this->db->beginTransaction();
@@ -256,6 +278,9 @@ class IncidentModel
         }
     }
 
+    /**
+     * Find a single incident by ID (for detailed view).
+     */
     public function findById(int $id): ?array
     {
         $sql = "
@@ -291,6 +316,9 @@ class IncidentModel
         return $stmt->fetch() ?: null;
     }
 
+    /**
+     * Get all incidents (paginated).
+     */
     public function getAll(int $limit = 50, int $offset = 0): array
     {
         $sql = "
@@ -322,6 +350,9 @@ class IncidentModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * Get incidents reported by a specific teacher.
+     */
     public function getByReporter(int $teacherId, int $limit = 50, int $offset = 0): array
     {
         $sql = "
@@ -355,6 +386,8 @@ class IncidentModel
 
         return $stmt->fetchAll();
     }
+
+    // ── Shared helper ──
 
     private function getResponseTypeId(string $typeName): int
     {

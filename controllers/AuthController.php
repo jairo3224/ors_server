@@ -1,4 +1,7 @@
 <?php
+
+// controllers/AuthController.php
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/jwt.php';
@@ -23,7 +26,6 @@ class AuthController
     {
         $body = $this->parseBody();
 
-        // ── Validation ──────────────────────────
         $errors = [];
         $email    = trim($body['email'] ?? '');
         $password = $body['password'] ?? '';
@@ -42,11 +44,8 @@ class AuthController
             Response::error('Validation failed.', 422, $errors);
         }
 
-        // ── Lookup user ─────────────────────────
         $user = $this->userModel->findByEmail($email);
 
-        // Use constant-time comparison regardless of whether user exists
-        // to prevent timing-based email enumeration
         $dummyHash = '$2y$12$invalidsaltXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
         $hash      = $user['password'] ?? $dummyHash;
 
@@ -58,14 +57,11 @@ class AuthController
             Response::error('Your account has been deactivated. Please contact the administrator.', 403);
         }
 
-        // ── Issue tokens ─────────────────────────
         $accessToken  = JwtHelper::generateAccessToken($user);
         $refreshToken = JwtHelper::generateRefreshToken((int) $user['id']);
 
-        // Send refresh token as HttpOnly cookie (safer than localStorage)
         $this->setRefreshCookie($refreshToken);
 
-        // Strip password before sending any user data
         unset($user['password']);
 
         Response::success(
@@ -81,7 +77,6 @@ class AuthController
 
     // ─────────────────────────────────────────────
     // POST /api/auth/refresh
-    // No body — reads refresh token from HttpOnly cookie
     // ─────────────────────────────────────────────
     public function refresh(): void
     {
@@ -127,11 +122,9 @@ class AuthController
 
     // ─────────────────────────────────────────────
     // POST /api/auth/logout
-    // Clears the refresh token cookie
     // ─────────────────────────────────────────────
     public function logout(): void
     {
-        // Expire the cookie immediately
         $cookiePath = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? '/'), '/') . '/api/auth';
 
         setcookie(
@@ -151,7 +144,6 @@ class AuthController
 
     // ─────────────────────────────────────────────
     // GET /api/auth/me
-    // Returns the current authenticated user
     // ─────────────────────────────────────────────
     public function me(): void
     {
@@ -167,6 +159,54 @@ class AuthController
         unset($user['password']);
 
         Response::success(['user' => $user]);
+    }
+
+    // ─────────────────────────────────────────────
+    // POST /api/auth/change-password
+    // Body: { current_password, new_password, confirm_password }
+    // ─────────────────────────────────────────────
+    public function changePassword(): void
+    {
+        AuthMiddleware::handle();
+        $authUser = AuthMiddleware::user();
+        $body = $this->parseBody();
+
+        $currentPassword = $body['current_password'] ?? '';
+        $newPassword     = $body['new_password'] ?? '';
+        $confirmPassword = $body['confirm_password'] ?? '';
+
+        // Validation
+        $errors = [];
+        if ($currentPassword === '') {
+            $errors['current_password'] = 'Current password is required.';
+        }
+        if ($newPassword === '') {
+            $errors['new_password'] = 'New password is required.';
+        } elseif (strlen($newPassword) < 8) {
+            $errors['new_password'] = 'New password must be at least 8 characters.';
+        }
+        if ($confirmPassword === '') {
+            $errors['confirm_password'] = 'Please confirm your new password.';
+        } elseif ($newPassword !== $confirmPassword) {
+            $errors['confirm_password'] = 'Passwords do not match.';
+        }
+
+        if (!empty($errors)) {
+            Response::error('Validation failed.', 422, $errors);
+        }
+
+        // Verify current password
+        $user = $this->userModel->findById((int) $authUser->id);
+        if (!$user || !password_verify($currentPassword, $user['password'])) {
+            $errors['current_password'] = 'Current password is incorrect.';
+            Response::error('Validation failed.', 422, $errors);
+        }
+
+        // Update password
+        $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
+        $this->userModel->updatePassword((int) $authUser->id, $hashed);
+
+        Response::success(null, 'Password changed successfully.');
     }
 
     // ─── Private helpers ──────────────────────────

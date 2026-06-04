@@ -23,7 +23,6 @@ class ChairpersonController
 
     /**
      * GET /api/chairperson/students
-     * Return students belonging to the chairperson’s department.
      */
     public function students(): void
     {
@@ -33,30 +32,22 @@ class ChairpersonController
     }
 
     /**
-     * Dev-only: return all students (no department filter).
-     * Accessible only from localhost to avoid accidental exposure.
+     * Dev-only: all students (localhost only)
      */
     public function studentsDebug(): void
     {
-        $remote = $_SERVER['REMOTE_ADDR'] ?? '';
-        $allowed = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
-        if (!in_array($remote, $allowed, true)) {
-            Response::forbidden('Debug endpoint is restricted to localhost.');
-        }
-
+        $this->blockNonLocalhost();
         $students = $this->studentModel->findAll();
         Response::success(['students' => $students]);
     }
 
     /**
      * GET /api/chairperson/reports
-     * Return incident reports for students in the chairperson’s department.
      */
     public function reports(): void
     {
         $user = $this->authenticateAndGetUser();
         $reports = $this->incidentModel->findByDepartment($user->department_id);
-        // Attach remarks to each report
         foreach ($reports as &$report) {
             $report['remarks'] = $this->incidentModel->getRemarks($report['id']);
         }
@@ -64,19 +55,12 @@ class ChairpersonController
     }
 
     /**
-     * Dev-only: return all reports (no department filter).
-     * Accessible only from localhost to avoid accidental exposure.
+     * Dev-only: all reports (localhost only)
      */
     public function reportsDebug(): void
     {
-        $remote = $_SERVER['REMOTE_ADDR'] ?? '';
-        $allowed = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
-        if (!in_array($remote, $allowed, true)) {
-            Response::forbidden('Debug endpoint is restricted to localhost.');
-        }
-
+        $this->blockNonLocalhost();
         $reports = $this->incidentModel->findAll();
-        // Attach remarks
         foreach ($reports as &$report) {
             $report['remarks'] = $this->incidentModel->getRemarks($report['id']);
         }
@@ -85,16 +69,12 @@ class ChairpersonController
 
     /**
      * GET /api/chairperson/cases
-     * For now, “cases” are the same incident reports but presented differently.
-     * We can add business logic later; for frontend continuity we reuse the same data
-     * but with a “case” view (status, priority, etc.).
      */
     public function cases(): void
     {
         $user = $this->authenticateAndGetUser();
         $incidents = $this->incidentModel->findByDepartment($user->department_id);
 
-        // Map to case-like structure expected by the frontend
         $cases = array_map(function ($report) {
             return [
                 'id'            => $report['id'],
@@ -104,7 +84,7 @@ class ChairpersonController
                 'type'          => $report['type'] ?? '',
                 'status'        => $report['status'] === 'referred' ? 'referred' : ($report['status'] === 'closed' ? 'closed' : 'open'),
                 'priority'      => $this->mapUrgencyToPriority($report['severity']),
-                'assigned_to'   => null, // will be filled if status = referred
+                'assigned_to'   => null,
                 'opened_date'   => $report['date_submitted'],
                 'last_update'   => $report['updated_at'],
                 'notes'         => $report['description'],
@@ -115,17 +95,11 @@ class ChairpersonController
     }
 
     /**
-     * Dev-only: return all cases (no department filter).
-     * Accessible only from localhost to avoid accidental exposure.
+     * Dev-only: all cases (localhost only)
      */
     public function casesDebug(): void
     {
-        $remote = $_SERVER['REMOTE_ADDR'] ?? '';
-        $allowed = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
-        if (!in_array($remote, $allowed, true)) {
-            Response::forbidden('Debug endpoint is restricted to localhost.');
-        }
-
+        $this->blockNonLocalhost();
         $reports = $this->incidentModel->findAll();
         $cases = array_map(function ($report) {
             return [
@@ -148,22 +122,21 @@ class ChairpersonController
 
     /**
      * GET /api/chairperson/inbox
-     * Return referrals sent to the chairperson’s department.
      */
     public function inbox(): void
     {
         $user = $this->authenticateAndGetUser();
         $referrals = $this->referralModel->findByDepartment($user->department_id);
-        // Map to inbox item structure
         $inbox = array_map(function ($ref) {
             return [
                 'id'            => $ref['id'],
+                'incident_id'   => $ref['incident_id'],
                 'student_name'  => $ref['student_name'],
                 'subject'       => $ref['subject'] ?? 'Referral',
                 'description'   => $ref['description'],
-                'from_office'   => 'OSAS', // hardcoded for now
+                'from_office'   => 'OSAS',
                 'date_received' => $ref['date_received'],
-                'status'        => $ref['status'] === 'completed' ? 'responded' : 'pending',
+                'status'        => $ref['status'] === 'completed' ? 'responded' : $ref['status'],
                 'response'      => $ref['response'],
             ];
         }, $referrals);
@@ -172,27 +145,22 @@ class ChairpersonController
     }
 
     /**
-     * Dev-only: return all referrals (no department filter).
-     * Accessible only from localhost to avoid accidental exposure.
+     * Dev-only: all referrals (localhost only)
      */
     public function inboxDebug(): void
     {
-        $remote = $_SERVER['REMOTE_ADDR'] ?? '';
-        $allowed = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
-        if (!in_array($remote, $allowed, true)) {
-            Response::forbidden('Debug endpoint is restricted to localhost.');
-        }
-
+        $this->blockNonLocalhost();
         $referrals = $this->referralModel->findAll();
         $inbox = array_map(function ($ref) {
             return [
                 'id'            => $ref['id'],
+                'incident_id'   => $ref['incident_id'],
                 'student_name'  => $ref['student_name'],
                 'subject'       => $ref['subject'] ?? 'Referral',
                 'description'   => $ref['description'],
                 'from_office'   => 'OSAS',
                 'date_received' => $ref['date_received'],
-                'status'        => $ref['status'] === 'completed' ? 'responded' : 'pending',
+                'status'        => $ref['status'] === 'completed' ? 'responded' : $ref['status'],
                 'response'      => $ref['response'],
             ];
         }, $referrals);
@@ -202,29 +170,30 @@ class ChairpersonController
 
     /**
      * POST /api/chairperson/reports/:id/remark
-     * Body: { text: string }
+     * Body: { text, response_type (optional, default 'remark') }
      */
     public function addRemark(int $reportId): void
     {
         $user = $this->authenticateAndGetUser();
         $body = $this->parseBody();
         $text = $body['text'] ?? '';
+        $responseType = $body['response_type'] ?? 'remark';
+
         if (empty(trim($text))) {
-            Response::error('Remark text is required.', 422);
+            Response::error('Response text is required.', 422);
         }
 
-        $this->incidentModel->addRemark($reportId, $user->id, $text);
-        Response::success(null, 'Remark added.');
+        $this->incidentModel->addResponse($reportId, $user->id, $responseType, $text);
+        Response::success(null, 'Response added.');
     }
 
     /**
-     * POST /api/chairperson/reports/:id/forward   (or cases/:id/forward)
-     * Body: { destination: 'OSAS', note: string }   (destination ignored, always OSAS)
+     * POST /api/chairperson/reports/:id/forward
+     * Body: { destination, note }
      */
     public function forward(int $incidentId): void
     {
         $user = $this->authenticateAndGetUser();
-        // Only forward to OSAS – we'll fetch an OSAS user ID (the first active OSAS user for simplicity)
         $osasUserId = $this->getOSASUserId();
         if (!$osasUserId) {
             Response::serverError('No OSAS user available to receive referral.');
@@ -235,18 +204,62 @@ class ChairpersonController
     }
 
     /**
+     * POST /api/chairperson/inbox/:id/accept
+     */
+    public function acceptReferral(int $referralId): void
+    {
+        $this->authenticateAndGetUser();
+        $this->referralModel->accept($referralId);
+        Response::success(null, 'Referral accepted.');
+    }
+
+    /**
+     * POST /api/chairperson/inbox/:id/reject
+     * Body: { reason }
+     */
+    public function rejectReferral(int $referralId): void
+    {
+        $this->authenticateAndGetUser();
+        $body = $this->parseBody();
+        $reason = $body['reason'] ?? '';
+        if (empty(trim($reason))) {
+            Response::error('Rejection reason is required.', 422);
+        }
+        $this->referralModel->reject($referralId, $reason);
+        Response::success(null, 'Referral rejected.');
+    }
+
+    /**
      * POST /api/chairperson/inbox/:id/respond
-     * Body: { responseText: string }
+     * Body: { responseText, responseType (optional, default 'assessment') }
+     * Creates a proper response record for the incident and marks referral as completed.
      */
     public function respondToReferral(int $referralId): void
     {
         $user = $this->authenticateAndGetUser();
         $body = $this->parseBody();
         $text = $body['responseText'] ?? '';
+        $responseType = $body['responseType'] ?? 'assessment';
+
         if (empty(trim($text))) {
             Response::error('Response text is required.', 422);
         }
 
+        // Get the incident_id from the referral
+        $referral = $this->referralModel->findById($referralId);
+        if (!$referral) {
+            Response::notFound('Referral not found.');
+        }
+
+        // Insert proper response for the incident
+        $this->incidentModel->addResponse(
+            (int) $referral['incident_id'],
+            $user->id,
+            $responseType,
+            $text
+        );
+
+        // Update the referral to completed
         $this->referralModel->respond($referralId, $text);
         Response::success(null, 'Response submitted.');
     }
@@ -298,5 +311,14 @@ class ChairpersonController
             return is_array($data) ? $data : [];
         }
         return $_POST;
+    }
+
+    private function blockNonLocalhost(): void
+    {
+        $remote = $_SERVER['REMOTE_ADDR'] ?? '';
+        $allowed = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
+        if (!in_array($remote, $allowed, true)) {
+            Response::forbidden('Debug endpoint is restricted to localhost.');
+        }
     }
 }

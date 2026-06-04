@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/database.php';
@@ -48,6 +49,7 @@ class UserModel
 
     /**
      * Find a user by ID (for /me endpoint and token refresh).
+     * NOTE: includes password field for the change-password feature.
      */
     public function findById(int $id): ?array
     {
@@ -58,6 +60,7 @@ class UserModel
                 u.first_name,
                 u.last_name,
                 u.email,
+                u.password,          -- added for change-password verification
                 u.is_active,
                 u.role_id,
                 r.role_name,
@@ -106,5 +109,21 @@ class UserModel
 
         $user = $stmt->fetch();
         return $user ?: null;
+    }
+
+    /**
+     * Update the password for a given user.
+     * 
+     * @param int    $userId         ID of the user
+     * @param string $hashedPassword bcrypt-hashed new password
+     */
+    public function updatePassword(int $userId, string $hashedPassword): void
+    {
+        $sql = "UPDATE users SET password = :password, updated_at = NOW() WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':password' => $hashedPassword,
+            ':id'       => $userId,
+        ]);
     }
 }

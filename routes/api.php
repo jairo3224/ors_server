@@ -1,4 +1,7 @@
 <?php
+
+// routes/api.php
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/../controllers/AuthController.php';
@@ -47,6 +50,7 @@ if ($path === '/auth/refresh' && $method === 'POST') { $auth->refresh(); }
 // PROTECTED ROUTES  (token required)
 // ─────────────────────────────────────────────────
 if ($path === '/auth/me' && $method === 'GET') { $auth->me(); }
+if ($path === '/auth/change-password' && $method === 'POST') { $auth->changePassword(); }  // NEW
 
 // ─────────────────────────────────────────────────
 // CHAIRPERSON ROUTES (Department Head only)
@@ -73,6 +77,12 @@ if (preg_match('#^/chairperson/reports/(\d+)/forward$#', $path, $matches) && $me
 }
 if (preg_match('#^/chairperson/inbox/(\d+)/respond$#', $path, $matches) && $method === 'POST') {
     $chairpersonController->respondToReferral((int) $matches[1]);
+}
+if (preg_match('#^/chairperson/inbox/(\d+)/accept$#', $path, $matches) && $method === 'POST') {
+    $chairpersonController->acceptReferral((int) $matches[1]);
+}
+if (preg_match('#^/chairperson/inbox/(\d+)/reject$#', $path, $matches) && $method === 'POST') {
+    $chairpersonController->rejectReferral((int) $matches[1]);
 }
 
 // ─────────────────────────────────────────────────
