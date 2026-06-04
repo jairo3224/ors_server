@@ -13,6 +13,9 @@ class ReferralModel
         $this->db = Database::connect();
     }
 
+    /**
+     * Fetch referrals sent TO the chairperson’s department.
+     */
     public function findByDepartment(int $departmentId): array
     {
         $sql = "
@@ -40,6 +43,9 @@ class ReferralModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * Dev helper: all referrals.
+     */
     public function findAll(): array
     {
         $sql = "
@@ -65,6 +71,44 @@ class ReferralModel
         return $stmt->fetchAll();
     }
 
+    /**
+     * Find a single referral by ID.
+     */
+    public function findById(int $referralId): ?array
+    {
+        $sql = "SELECT * FROM referrals WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $referralId]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    } 
+
+    /**
+     * Accept a referral.
+     */
+    public function accept(int $referralId): void
+    {
+        $sql = "UPDATE referrals SET status = 'accepted', updated_at = NOW() WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $referralId]);
+    }
+
+    /**
+     * Reject a referral with a reason.
+     */
+    public function reject(int $referralId, string $reason): void
+    {
+        $sql = "UPDATE referrals SET status = 'rejected', remarks = :remarks, responded_at = NOW(), updated_at = NOW() WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':remarks' => $reason,
+            ':id'      => $referralId,
+        ]);
+    }
+
+    /**
+     * Respond to a referral (marks as completed).
+     */
     public function respond(int $referralId, string $responseText): void
     {
         $sql = "
