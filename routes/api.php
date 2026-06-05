@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/ChairpersonController.php';
+require_once __DIR__ . '/../controllers/GuidanceController.php';
 require_once __DIR__ . '/../controllers/IncidentController.php';
 require_once __DIR__ . '/../controllers/StudentController.php';
 require_once __DIR__ . '/../controllers/ClassController.php';
@@ -32,6 +33,7 @@ $path = preg_replace('#^/api#', '', $path);
 
 $auth = new AuthController();
 $chairpersonController = new ChairpersonController();
+$guidanceController = new GuidanceController();
 $incidentController = new IncidentController();
 $studentController = new StudentController();
 $classController = new ClassController();
@@ -122,6 +124,64 @@ if ($path === '/teacher/classes' && $method === 'GET') {
 
 if ($method === 'GET' && preg_match('#^/teacher/classes/(\d+)/roster$#', $path, $matches)) {
     $classController->roster((int) $matches[1]);
+}
+
+// ─────────────────────────────────────────────────
+// GUIDANCE ROUTES (Guidance Office only)
+// ─────────────────────────────────────────────────
+if ($path === '/guidance/overview' && $method === 'GET') {
+    $guidanceController->overview();
+}
+if ($path === '/guidance/inbox' && $method === 'GET') {
+    $guidanceController->inbox();
+}
+if ($path === '/guidance/sent' && $method === 'GET') {
+    $guidanceController->sent();
+}
+if ($path === '/guidance/incidents' && $method === 'GET') {
+    $guidanceController->incidents();
+}
+if ($path === '/guidance/responses' && $method === 'GET') {
+    $guidanceController->responses();
+}
+if ($path === '/guidance/notifications' && $method === 'GET') {
+    $guidanceController->notifications();
+}
+if ($path === '/guidance/students/search' && $method === 'GET') {
+    $guidanceController->searchStudents();
+}
+if ($path === '/guidance/students/history' && $method === 'GET') {
+    $guidanceController->studentHistory();
+}
+
+// Guidance - dynamic referral routes
+if (preg_match('#^/guidance/referrals/(\d+)/accept$#', $path, $matches) && $method === 'POST') {
+    $guidanceController->acceptReferral((int) $matches[1]);
+}
+if (preg_match('#^/guidance/referrals/(\d+)/reject$#', $path, $matches) && $method === 'POST') {
+    $guidanceController->rejectReferral((int) $matches[1]);
+}
+if (preg_match('#^/guidance/referrals/(\d+)/respond$#', $path, $matches) && $method === 'POST') {
+    $guidanceController->respondToReferral((int) $matches[1]);
+}
+if (preg_match('#^/guidance/referrals/(\d+)/return-to-osas$#', $path, $matches) && $method === 'POST') {
+    $guidanceController->returnToOSAS((int) $matches[1]);
+}
+if (preg_match('#^/guidance/referrals/(\d+)/refer-to-chaplain$#', $path, $matches) && $method === 'POST') {
+    $guidanceController->referToChaplain((int) $matches[1]);
+}
+
+// Guidance - sessions & attachments
+if ($path === '/guidance/sessions' && $method === 'POST') {
+    $guidanceController->createSession();
+}
+if ($path === '/guidance/attachments' && $method === 'POST') {
+    $guidanceController->addAttachment();
+}
+
+// Guidance - notifications
+if (preg_match('#^/guidance/mark-notification-read/(\d+)$#', $path, $matches) && $method === 'POST') {
+    $guidanceController->markNotificationRead((int) $matches[1]);
 }
 
 // ─────────────────────────────────────────────────

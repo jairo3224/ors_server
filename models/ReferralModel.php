@@ -65,6 +65,57 @@ class ReferralModel
         return $stmt->fetchAll();
     }
 
+    public function accept(int $referralId): void
+    {
+        $sql = "
+            UPDATE referrals
+            SET status = 'accepted', updated_at = NOW()
+            WHERE id = :id
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $referralId]);
+    }
+
+    public function reject(int $referralId, string $reason): void
+    {
+        $sql = "
+            UPDATE referrals
+            SET status = 'rejected', remarks = :remarks, responded_at = NOW(), updated_at = NOW()
+            WHERE id = :id
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':remarks' => $reason,
+            ':id'      => $referralId,
+        ]);
+    }
+
+    public function findById(int $id): ?array
+    {
+        $sql = "
+            SELECT
+                r.id,
+                r.incident_id,
+                r.referred_to,
+                r.referred_by,
+                r.status,
+                r.remarks,
+                r.referred_at,
+                r.responded_at,
+                ir.description,
+                ir.student_id,
+                CONCAT(s.first_name, ' ', s.last_name) AS student_name
+            FROM referrals r
+            INNER JOIN incident_reports ir ON ir.id = r.incident_id
+            INNER JOIN students s ON s.id = ir.student_id
+            WHERE r.id = :id
+            LIMIT 1
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch() ?: null;
+    }
+
     public function respond(int $referralId, string $responseText): void
     {
         $sql = "
