@@ -13,6 +13,23 @@ class IncidentModel
         $this->db = Database::connect();
     }
 
+    public function addResponse(int $incidentId, int $userId, string $typeName, string $text): void
+    {
+        $typeId = $this->getResponseTypeId($typeName);
+
+        $sql = "
+            INSERT INTO responses (incident_id, user_id, response_type_id, remarks)
+            VALUES (:incident_id, :user_id, :type_id, :remarks)
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':incident_id' => $incidentId,
+            ':user_id'     => $userId,
+            ':type_id'     => $typeId,
+            ':remarks'     => $text,
+        ]);
+    }
+
     public function findByDepartment(int $departmentId): array
     {
         $sql = "
